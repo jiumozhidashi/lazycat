@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^$', view.hello),
     path('formatysb/',view.formatysb),
-    path('dowloadysb/',view.downloadysbmodel)
+    path('dowloadysb/',view.downloadysbmodel),
+    path('formatysb/UploadFile/',view.UploadFile)
 ]
