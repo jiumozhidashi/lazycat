@@ -59,26 +59,28 @@ def UploadFile(request):
      stations=next(data)[5:]
     for station in stations:
        print(station)'''
-    print('stations_rows:')
+    print(oldws.dimensions)
 
     write_row = 2
-    write_col=1
-    read_row=material_start_row
+    read_max_row=0
     read_col=station_start_col
     for st_col in oldws.iter_cols(min_row=station_row,max_row=station_row,min_col=station_start_col):
          for station_cell in st_col:
-             if station_cell.value == "单价(元)":
+             if station_cell.value == "单价(元)" or station_cell.value==None:
                  break
              else:
-                 for ma_row in oldws.iter_rows(min_row=material_start_row,min_col=materialinfo_start_col,max_col=materialinfo_end_col):
+                 read_row = material_start_row
+                 for ma_row in oldws.iter_rows(min_row=material_start_row,max_row=143,min_col=materialinfo_start_col,max_col=materialinfo_end_col):
+                    write_col = 1
                     for r in ma_row:
                         newws.cell(row=write_row,column=write_col,value=r.value)
                         write_col+=1
-                    newws.cell(row=write_row,column=write_col+1,value=oldws.cell(row=read_row,column=read_col).value)
-                    newws.cell(row=write_row,column=write_col+2,value=station_cell.value)
+                    newws.cell(row=write_row,column=write_col,value=oldws.cell(row=read_row,column=read_col).value)
+                    print(oldws.cell(row=read_row,column=read_col))
+                    newws.cell(row=write_row,column=write_col+1,value=station_cell.value)
                     write_row+=1
                     read_row+=1
-             read_col+=1
+                 read_col+=1
     '''for row in oldws.iter_rows(min_row=7,min_col=6):
         for r in row:'''
             #print(r.value)
