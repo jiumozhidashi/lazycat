@@ -5,10 +5,12 @@
     <title>格式化演算表</title>
 </head>
 <body>
-<h1>请上传演算表文件</h1>
+<h1>请上传演算表、任务列表、MIS领料单文件</h1>
  <form action="UploadFile/" method="post" enctype="multipart/form-data">
      {% csrf_token %}
-    <p><input type="file" name="fileUpload" /></p>
+    <p><h2>演算表</h2><input type="file" name="calc_wb" /></p>
+     <p><h2>任务列表</h2><input type="file" name="task_wb" /></p>
+     <p><h2>MIS领料单</h2><input type="file" name="mis_wb" /></p>
     <input type="submit" value="上传文件" />
     </form>
 
