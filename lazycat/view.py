@@ -98,10 +98,5 @@ def uploadfile(request):
     df1=pd.merge(df_ysb,df_task_list[['工程名称','MIS任务号']],on='工程名称',how='outer')
     df1=df1.round({'数量':3})
     print(df1)
-    # print(df1.index)
-    # print(df1.columns)
-    # for row in oldws.iter_rows():
-    #   for cell in row:
-    #      print(cell.coordinate,cell.value)
     return HttpResponse('OK')
     # return render(request, 'formatysb.html')
