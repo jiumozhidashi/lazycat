@@ -57,19 +57,14 @@ def uploadfile(request):
             s = cell.value
         else:
             cell.value = s
-        # print(cell.coordinate,cell.value)
     newws = wb.create_sheet(title='formatsheet')
-
-    # data=oldws.values
-    '''print('stations:')
-    for n in range(1,5):
-     stations=next(data)[5:]
-    for station in stations:
-       print(station)'''
-    print(oldws.dimensions)
-
+    header = ('材料名称', '规格', '单位', '数量', '工程名称')
+    c = 1
+    for head in header:
+        newws.cell(row=1,column=c,value=head)
+        c += 1
     write_row = 2
-    # read_max_row=0
+    read_max_row = 143
     read_col = station_start_col
     for st_col in oldws.iter_cols(min_row=station_row, max_row=station_row, min_col=station_start_col):
         for station_cell in st_col:
@@ -77,50 +72,32 @@ def uploadfile(request):
                 break
             else:
                 read_row = material_start_row
-                for ma_row in oldws.iter_rows(min_row=material_start_row, max_row=143, min_col=materialinfo_start_col,
+                for ma_row in oldws.iter_rows(min_row=material_start_row, max_row=read_max_row,
+                                              min_col=materialinfo_start_col,
                                               max_col=materialinfo_end_col):
                     write_col = 1
-                    print(ma_row[3].value)
-                    if ma_row[3].value=='甲供':
-                        for r in ma_row:
+                    material_qty=oldws.cell(row=read_row,column=read_col).value
+                    if (ma_row[3].value == '甲供')and (material_qty != 0) and (material_qty is not None):
+                        for r in ma_row[0:3]:
                             newws.cell(row=write_row, column=write_col, value=r.value)
                             write_col += 1
-                        newws.cell(row=write_row, column=write_col, value=oldws.cell(row=read_row, column=read_col).value)
-                        print(oldws.cell(row=read_row, column=read_col))
+                        newws.cell(row=write_row, column=write_col, value=material_qty)
                         newws.cell(row=write_row, column=write_col + 1, value=station_cell.value)
                         write_row += 1
-                        read_row += 1
+                    read_row += 1
                 read_col += 1
-    '''for row in oldws.iter_rows(min_row=7,min_col=6):
-        for r in row:'''
-    # print(r.value)
-    '''materials=[r[1:4] for r in data]
-    specs=[r[2] for r in data ]
-    units=[r[3] for r in data ]
-    qtys=[r[4:] for r in data]'''
-    '''print(materials)
-    print(specs)
-    print(units)
-    print(qtys)'''
-    header = ('material', 'spec', 'unit', 'qty ', 'station')
-
-    '''data=oldws.values
-    print(data)
-    print('-------------')
-    cols=next(data)[1:]
-    data=list(data)
-    print(data)
-    print('-------------')
-    idx=[r[0] for r in data]
-    data=(islice(r,1,None)for r in data)
-    df=pd.DataFrame(data,index=idx,columns=cols)
-    print(df)
-    print('打印索引')
-    print(df.index)
-    print('打印列名')
-    print(df.columns)'''
     wb.save('static/downloads/%s' % obj1.name)
-    # df1=pd.read_excel('static/downloads/%s'%(obj.name))
+    df_ysb=pd.read_excel('static/downloads/%s' % obj1.name,sheet_name='formatsheet')
+    print(df_ysb)
+    f2 = open(os.path.join('static', 'downloads', obj2.name), 'wb')
+    for chunk in obj2.chunks():
+        f2.write(chunk)
+    f2.close()
+    df_task_list=pd.read_excel('static/downloads/%s' % obj2.name)
+    print(df_task_list)
+    df1=pd.merge(df_ysb,df_task_list[['工程名称','MIS任务号']],on='工程名称',how='outer')
+    df1=df1.round({'数量':3})
+    print(df1)
     # print(df1.index)
     # print(df1.columns)
     # for row in oldws.iter_rows():
