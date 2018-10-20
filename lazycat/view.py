@@ -4,10 +4,11 @@ from django.http import FileResponse
 from django.utils.encoding import escape_uri_path
 from django.http import HttpResponse
 import pandas as pd
-import numpy as np
-import openpyxl
+# import numpy as np
+# import openpyxl
+# import difflib
 from openpyxl import load_workbook
-from itertools import islice
+# from itertools import islice
 
 
 def hello(request):
@@ -58,7 +59,7 @@ def uploadfile(request):
         else:
             cell.value = s
     newws = wb.create_sheet(title='formatsheet')
-    header = ('材料名称', '规格', '单位', '数量', '工程名称')
+    header = ('物料名称', '规格', '单位', '数量', '工程名称')
     c = 1
     for head in header:
         newws.cell(row=1,column=c,value=head)
@@ -88,15 +89,33 @@ def uploadfile(request):
                 read_col += 1
     wb.save('static/downloads/%s' % obj1.name)
     df_ysb=pd.read_excel('static/downloads/%s' % obj1.name,sheet_name='formatsheet')
-    print(df_ysb)
     f2 = open(os.path.join('static', 'downloads', obj2.name), 'wb')
     for chunk in obj2.chunks():
         f2.write(chunk)
     f2.close()
     df_task_list=pd.read_excel('static/downloads/%s' % obj2.name)
-    print(df_task_list)
-    df1=pd.merge(df_ysb,df_task_list[['工程名称','MIS任务号']],on='工程名称',how='outer')
-    df1=df1.round({'数量':3})
-    print(df1)
+    df_material_use=pd.merge(df_ysb,df_task_list[['工程名称','MIS任务号']],on='工程名称',how='outer')
+    df_material_use=df_material_use.round({'数量':3})
+    df_material_name=df_material_use['物料名称'].str.cat(df_material_use['规格'], na_rep='').str.strip()
+    df_material_use=pd.concat([df_material_name,df_material_use[['单位','数量','工程名称','MIS任务号']]],axis=1)
+    print(df_material_use)
+    df_material_name=df_material_name.drop_duplicates(keep='first', inplace=False)
+    df_material_name=df_material_name.reset_index()['物料名称']
+    print(df_material_name)
+    f3 = open(os.path.join('static', 'downloads', obj3.name), 'wb')
+    for chunk in obj3.chunks():
+        f3.write(chunk)
+    f3.close()
+    df_mis = pd.read_excel('static/downloads/%s' % obj3.name)
+    df_material_mis_name=df_mis['备注']
+    df_material_mis_name=df_material_mis_name.drop_duplicates(keep='first', inplace=False)
+    df_material_mis_name=df_material_mis_name.reset_index()['备注']
+    df_rules = pd.read_excel('static/rules.xlsx')
+    df_mis=pd.merge(df_mis,df_rules,left_on='备注',right_on='MIS物料名称',how='left')
+    df_mis_grouped=df_mis[['数量']].groupby([df_mis['演算表物料名称'],df_mis['任务']]).sum()
+    print(df_mis_grouped)
+    #df_merge = pd.merge(df_mis, df_material_use, left_on=['演算表物料名称', '任务'], right_on=['物料名称', 'MIS任务号'],
+      #                  how='outer')
+    df_mis_grouped.to_excel("static/df_mis_grouped.xlsx", sheet_name="01", index=False, header=True)
     return HttpResponse('OK')
     # return render(request, 'formatysb.html')
