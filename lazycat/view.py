@@ -112,8 +112,11 @@ def uploadfile(request):
     df_material_mis_name=df_material_mis_name.reset_index()['备注']
     df_rules = pd.read_excel('static/rules.xlsx')
     df_mis=pd.merge(df_mis,df_rules,left_on='备注',right_on='MIS物料名称',how='left')
-    df_mis_grouped=df_mis[['数量']].groupby([df_mis['演算表物料名称'],df_mis['任务']]).sum()
+    df_mis_grouped=df_mis.groupby(['演算表物料名称','任务'],as_index=False).sum()
+    df_material_use_grouped=df_material_use.groupby(['物料名称','MIS任务号'],as_index=False).sum()
+    df_material_use_grouped['数量']=-df_material_use_grouped['数量']
     print(df_mis_grouped)
+    print(df_material_use_grouped)
     #df_merge = pd.merge(df_mis, df_material_use, left_on=['演算表物料名称', '任务'], right_on=['物料名称', 'MIS任务号'],
       #                  how='outer')
     df_mis_grouped.to_excel("static/df_mis_grouped.xlsx", sheet_name="01", index=False, header=True)
